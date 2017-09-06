@@ -1,4 +1,6 @@
 var map;
+var markers = [];
+
 function initMap() {
   // Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
@@ -6,11 +8,57 @@ function initMap() {
     zoom: 13
   });
 
-  var home = {lat: 32.928616, lng: -96.825974};
+  var locations = [
+    {title: "Apt. Home Base", location: {lat: 32.928616, lng: -96.825974}},
+    {title: "Bay 34th Street", location: {lat: 32.97324, lng: -96.820502}},
+    {title: "Carmine's Pizzeria", location: {lat: 32.939885, lng: -96.815144}}
+  ];
 
-  var marker = new google.maps.Marker({
-    position: home,
-    map: map,
-    title: "No place like home!"
-  })
+  var largeInfoWindonw = new google.maps.InfoWindow();
+  var bounds = new google.maps.LatLngBounds();
+
+  for (var i=0; i<locations.length; i++) {
+    var position = locations[i].location;
+    var title = locations[i].title;
+    var marker = new google.maps.Marker({
+      map: map,
+      position: position,
+      title: title,
+      animation: google.maps.Animation.DROP,
+      id: i
+    });
+
+    markers.push(marker);
+    bounds.extend(marker.position);
+    marker.addListener('click', function(){
+      populateInfoWindow(this, largeInfoWindonw);
+    });
+
+    function populateInfoWindow(marker, infowindow) {
+      if (infowindow.marker != marker) {
+        infowindow.marker = marker;
+        infowindow.setContent('<div>' + marker.title + '</div>');
+        infowindow.open(map, marker);
+        infowindow.addListener('closeclick', function() {
+          infowindow.setMarker(null);
+        })
+      }
+    }
+
+    map.fitBounds(bounds);
+  }
+
+  // var marker = new google.maps.Marker({
+  //   position: home,
+  //   map: map,
+  //   title: "No place like home!"
+  // });
+  //
+  // var infowindow = new google.maps.InfoWindow({
+  //   content: "One dark night in the middle of the day ..."
+  // });
+  //
+  // marker.addListener('click', function() {
+  //   infowindow.open(map, marker);
+  // });
 }
