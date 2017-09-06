@@ -21,7 +21,6 @@ function initMap() {
     var position = locations[i].location;
     var title = locations[i].title;
     var marker = new google.maps.Marker({
-      map: map,
       position: position,
       title: title,
       animation: google.maps.Animation.DROP,
@@ -45,7 +44,24 @@ function initMap() {
       }
     }
 
-    map.fitBounds(bounds);
+    function showPizzerias() {
+      var bounds = new google.maps.LatLngBounds();
+      for (var i=0; i<markers.length; i++) {
+        markers[i].setMap(map);
+        bounds.extend(markers[i].position);
+      }
+
+      map.fitBounds(bounds);
+    }
+
+    function hidePizzerias() {
+      for (var i=0; i<markers.length; i++) {
+        markers[i].setMap(null);
+      }
+    }
+
+    document.getElementById('show-pizzerias').addEventListener('click', showPizzerias);
+    document.getElementById('hide-pizzerias').addEventListener('click', hidePizzerias);
   }
 
   // var marker = new google.maps.Marker({
