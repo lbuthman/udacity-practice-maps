@@ -1,0 +1,7 @@
+1. Create a pizza explorer. Use a homebase location, search for pizza places
+in the location, and mark visited places. This lets me explore while not
+visiting the same place twice. I can also use my own rating system, since I
+trust my tastes more than other people.
+
+2. Similar idea from above but just record all the places I have gone out to
+eat at. The rating is simple binary: "I'd go there again." or "Nah.".
