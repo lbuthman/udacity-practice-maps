@@ -80,78 +80,92 @@ function initMap() {
       new google.maps.Point(10, 34),
       new google.maps.Size(21, 34));
 
-    return markerImage
-  }
-
-  for (var i=0; i<locations.length; i++) {
-    var position = locations[i].location;
-    var title = locations[i].title;
-    var marker = new google.maps.Marker({
-      position: position,
-      title: title,
-      icon: defaultIcon,
-      animation: google.maps.Animation.DROP,
-      id: i
-    });
-
-    markers.push(marker);
-
-    bounds.extend(marker.position);
-
-    marker.addListener('click', function(){
-      populateInfoWindow(this, largeInfoWindow);
-    });
-
-    marker.addListener('mouseover', function() {
-      this.setIcon(highlightedIcon);
-    });
-
-    marker.addListener('mouseout', function() {
-      this.setIcon(defaultIcon);
-    });
-
-    function populateInfoWindow(marker, infowindow) {
-      if (infowindow.marker != marker) {
-        infowindow.marker = marker;
-        infowindow.setContent('<div>' + marker.title + "<br>" + marker.position + '</div>');
-        infowindow.open(map, marker);
-        infowindow.addListener('closeclick', function() {
-          infowindow.setMarker(null);
-        })
-      }
+      return markerImage
     }
 
-    function showPizzerias() {
-      var bounds = new google.maps.LatLngBounds();
-      for (var i=0; i<markers.length; i++) {
-        markers[i].setMap(map);
-        bounds.extend(markers[i].position);
-      }
+    for (var i=0; i<locations.length; i++) {
+      var position = locations[i].location;
+      var title = locations[i].title;
+      var marker = new google.maps.Marker({
+        position: position,
+        title: title,
+        icon: defaultIcon,
+        animation: google.maps.Animation.DROP,
+        id: i
+      });
 
-      map.fitBounds(bounds);
+      markers.push(marker);
+
+      bounds.extend(marker.position);
+
+      marker.addListener('click', function(){
+        populateInfoWindow(this, largeInfoWindow);
+      });
+
+      marker.addListener('mouseover', function() {
+        this.setIcon(highlightedIcon);
+      });
+
+      marker.addListener('mouseout', function() {
+        this.setIcon(defaultIcon);
+      });
     }
 
-    function hidePizzerias() {
-      for (var i=0; i<markers.length; i++) {
-        markers[i].setMap(null);
-      }
-    }
 
     document.getElementById('show-pizzerias').addEventListener('click', showPizzerias);
     document.getElementById('hide-pizzerias').addEventListener('click', hidePizzerias);
   }
 
-  // var marker = new google.maps.Marker({
-  //   position: home,
-  //   map: map,
-  //   title: "No place like home!"
-  // });
-  //
-  // var infowindow = new google.maps.InfoWindow({
-  //   content: "One dark night in the middle of the day ..."
-  // });
-  //
-  // marker.addListener('click', function() {
-  //   infowindow.open(map, marker);
-  // });
+function populateInfoWindow(marker, infowindow) {
+  if (infowindow.marker != marker) {
+    infowindow.setContent('');
+    infowindow.marker = marker;
+    infowindow.addListener('closeclick', function() {
+      infowindow.marker = null;
+    });
+
+    var streetViewService = new google.maps.StreetViewService();
+    var radius = 50;
+
+    function getStreetView(data, status) {
+      if (status == google.maps.StreetViewStatus.OK) {
+        var nearStreetViewLocation = data.location.latLng;
+        var heading = google.maps.geometry.spherical.computeHeading(
+          nearStreetViewLocation, marker.position);
+        infowindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
+        var panoramaOptions = {
+          position: nearStreetViewLocation,
+          pov: {
+            heading: heading,
+            pitch: 30
+          }
+        };
+        var panorama = new google.maps.StreetViewPanorama(
+          document.getElementById('pano'), panoramaOptions);
+      } else {
+        infowindow.setContent('<div>' + marker.title + '</div>' +
+        '<div>No Street View Found </div>');
+      }
+    }
+
+    streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+
+    infowindow.open(map, marker);
+  }
+}
+
+function showPizzerias() {
+  var bounds = new google.maps.LatLngBounds();
+  for (var i=0; i<markers.length; i++) {
+    markers[i].setMap(map);
+    bounds.extend(markers[i].position);
+  }
+
+  map.fitBounds(bounds);
+}
+
+function hidePizzerias() {
+  for (var i=0; i<markers.length; i++) {
+    markers[i].setMap(null);
+  }
 }
