@@ -114,6 +114,9 @@ function initMap() {
 
     document.getElementById('show-pizzerias').addEventListener('click', showPizzerias);
     document.getElementById('hide-pizzerias').addEventListener('click', hidePizzerias);
+    document.getElementById('zoom-to-area').addEventListener('click', function(){
+      zoomToArea();
+    });
   }
 
 function populateInfoWindow(marker, infowindow) {
@@ -167,5 +170,28 @@ function showPizzerias() {
 function hidePizzerias() {
   for (var i=0; i<markers.length; i++) {
     markers[i].setMap(null);
+  }
+}
+
+function zoomToArea() {
+  var geocoder = new google.maps.Geocoder();
+  var address = document.getElementById('zoom-to-area-text').value;
+  var city = document.getElementById('city').value;
+  if (address == '') {
+    alert('Please enter an address to get started!');
+  }
+  else {
+    geocoder.geocode({
+      address: address,
+      componentRestrictions: {locality: city}
+    }, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        map.setZoom(15);
+      }
+      else {
+        alert("Sorry, we couldn't find that location. Please try again");
+      }
+    });
   }
 }
